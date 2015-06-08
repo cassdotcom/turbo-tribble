@@ -2,31 +2,17 @@
 
 Process { 
 
-<# 	# LOGFILE
-	$LOG = get-logfile "S:\TEST AREA\ac00418\reconversion\logs\" #>
+	# LOGFILE
 	$LOG = "S:\TEST AREA\ac00418\reconversion\rev_i\logs\log.txt"
-	#set-alias get-timestamp "S:\TEST AREA\ac00418\CBM\rev_ii\scripts\get-timestamp.ps1"
 	"$($(get-timestamp -reporting))`tSTART SCRIPT" | Out-File $LOG
-	
-<# 	#----------------------------------------------------------
-	# LOAD ALIAS
-	#----------------------------------------------------------
-	$function_library = gc "C:\Users\ac00418\Documents\gui\sandbox\settings\function_library.txt"
-	foreach ( $function in $function_library ) { 
-		set-alias ($function.split(","))[0] ($function.split(","))[1] 
-	} #>
-		
+			
 	# DATABASE
 	$np_db = "S:\TEST AREA\ac00418\CBM\model_data\db\ModelDatabase.mdb"
 	"$($(get-timestamp -reporting))`tDB: $($np_db)" | Out-File $LOG -append
-<# 	$msg = "Load model database: $($np_db)"
-	write-to-log-and-line $LOG $msg #>
-	
+
 
 	# SCRIPT
-	$QRYDB = "S:\TEST AREA\ac00418\CBM\rev_ii\scripts\query-database.ps1" 	
-<# 	$msg = "Load database script: $($np_db)"
-	write-to-log-and-line $LOG $msg #>
+	$QRYDB = "S:\TEST AREA\ac00418\reconversion\rev_i\scripts\query-database.ps1" 	
 	# ALIAS SCRIPT (OPTIONAL)
 	set-alias query-database $QRYDB
 	"$($(get-timestamp -reporting))`tALIAS: query-database" | Out-File $LOG -append
@@ -58,6 +44,10 @@ Process {
 		
 		# loop
 		foreach ( $m in $results ) {
+		
+			# ADDITIONAL - ONLY FOR Y DRIVE!!!!
+			$four_three = '\\\\scotia.sgngroup.net\\dfs\\shared\\Syn4.2.3'
+			$m.PATH = $m.PATH -replace $four_three, "Y:"
 			
 			write-host "`rTesting: $($m.TITLE)" -NoNewLine
 			$exists = Test-Path $m.PATH
@@ -66,8 +56,10 @@ Process {
 			$valid = 'NO'
 			
 			if ( $exists ) { $valid = 'YES' }
-			write-host "`t`t$($valid)" -NoNewLine	
-			$qry = "UPDATE NETWORKS SET NETWORKS.FY1 = '$($valid)' WHERE NETWORKS.TITLE = '$($m.TITLE)' "
+			write-host "`t`t$($valid)" -NoNewLine
+			
+			$qry = "UPDATE NETWORKS SET NETWORKS.FY1 = '$($valid)' WHERE NETWORKS.TITLE = '$($m.TITLE)' "			
+			$results = query-database $np_db $qry
 			
 			"$($(get-timestamp -reporting))`t$($m.PATH)`t`t$($valid)" | Out-File $LOG -append
 			start-sleep 1
@@ -143,8 +135,8 @@ function get-logfile {
 # .function_SETUP-SYNERGEE-STRUCTURE
 #----------------------------------------------------------
 	function setup-synergee_structure {
-		
-<# 		$REGION_LIST = @(
+			
+ 		$REGION_LIST = @(
 			'N1';
 			'N2';
 			'N3';
@@ -154,11 +146,7 @@ function get-logfile {
 			'S6';
 			'S7';
 			'S8';
-			'S9') #>
-			
-		$REGION_LIST = @(
-			'N1';
-			'N2')
+			'S9')
 			
 		$LDZ_LIST = @(
 			'Scotland Networks';
